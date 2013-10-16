@@ -1,6 +1,4 @@
 andlib
 ======
 
-Test
-
 Android library.
