@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface.OnCancelListener;
 
+import com.anddevbg.andlib.R;
 import com.anddevbg.dialogs.IProgressDialog;
-import com.anddevbg.tools.R;
 
 /**
  * 

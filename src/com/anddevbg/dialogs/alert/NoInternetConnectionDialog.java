@@ -4,7 +4,7 @@ import android.app.AlertDialog.Builder;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 
-import com.anddevbg.tools.R;
+import com.anddevbg.andlib.R;
 
 /**
  * Default no internet connection dialog.
