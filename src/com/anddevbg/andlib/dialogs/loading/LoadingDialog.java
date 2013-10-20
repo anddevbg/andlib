@@ -10,20 +10,24 @@ import com.anddevbg.andlib.dialogs.IProgressDialog;
 /**
  * 
  * @author anddevbg@gmail.com
- *
+ * 
  */
 public class LoadingDialog implements IProgressDialog {
-	
+
 	private ProgressDialog mLoadingDialog;
-	
-	/**
-	 *  Same as show(activity, R.string.loading, true);
-	 */
-	public void show(final Activity activity) {
-		show(activity, R.string.loading, true);
+
+	private boolean mIsCancelable = true;
+	private int mLoadingTextResId = R.string.loading;
+
+	public void isCancelable(boolean isCancelable) {
+		mIsCancelable = isCancelable;
 	}
-	
-	public void show(final Activity activity, final int textResId, final boolean isCancelable) {
+
+	public void loadingTextRes(int resId) {
+		mLoadingTextResId = resId;
+	}
+
+	public void show(final Activity activity) {
 		if (mLoadingDialog != null && mLoadingDialog.isShowing() || activity.isFinishing()) {
 			return;
 		}
@@ -32,20 +36,20 @@ public class LoadingDialog implements IProgressDialog {
 
 			@Override
 			public void run() {
-				mLoadingDialog = ProgressDialog.show(activity, null, activity.getString(textResId), true, isCancelable);
+				mLoadingDialog = ProgressDialog.show(activity, null, activity.getString(mLoadingTextResId), true, mIsCancelable);
 			}
 		});
 	}
-	
+
 	@Override
 	public void dismiss() {
 		if (mLoadingDialog != null && mLoadingDialog.isShowing()) {
 			mLoadingDialog.dismiss();
 		}
-		
+
 		mLoadingDialog = null;
 	}
-	
+
 	@Override
 	public void setOnCancelListener(OnCancelListener listener) {
 		if (mLoadingDialog != null) {
