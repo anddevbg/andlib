@@ -1,18 +1,27 @@
 package com.anddevbg.andlib.widgets;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.NinePatch;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.widget.TextView;
 
 import com.anddevbg.andlib.log.LogWrapper;
 
@@ -24,6 +33,19 @@ import com.anddevbg.andlib.log.LogWrapper;
 public class WidgetUtil {
 
 	private WidgetUtil() {
+	}
+	
+	/**
+	 * 
+	 * @param view
+	 * @param fontPath e.g. "fonts/niceFont.ttf"
+	 */
+	public static void setFontOfTextViewFromAssets(TextView view, String fontPath) {
+		try {
+			AssetManager assets = view.getContext().getAssets();
+			view.setTypeface(Typeface.createFromAsset(assets, fontPath));
+		} catch (Exception e) {
+		}
 	}
 
 	@SuppressLint("NewApi")
@@ -112,8 +134,15 @@ public class WidgetUtil {
 		return null;
 	}
 	
+	public static Rect getRectOfView(View v) {
+		int[] position = new int[2];
+		v.getLocationOnScreen(position);
+
+		return new Rect(position[0], position[1], position[0] + v.getWidth(), position[1] + v.getHeight());
+	}
+	
 	/**
-	 * Convenient method to remove onGlobalLayoutListener
+	 * Convenience method to remove onGlobalLayoutListener.
 	 */
 	@SuppressWarnings("deprecation")
 	@SuppressLint("NewApi")
@@ -124,6 +153,76 @@ public class WidgetUtil {
 			view.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
 		} else {
 			view.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
+		}
+	}
+	
+	/**
+	 * 
+	 * Convenience method to enable/disable view group.
+	 * 
+	 * @param viewGroup
+	 * @param enabled
+	 */
+	public static void setViewGroupEnabled(ViewGroup viewGroup, boolean enabled) {
+		int childCount = viewGroup.getChildCount();
+
+		for (int i = 0; i < childCount; i++) {
+			View view = viewGroup.getChildAt(i);
+			view.setEnabled(enabled);
+			if (view instanceof ViewGroup) {
+				setViewGroupEnabled((ViewGroup) view, enabled);
+			}
+		}
+	}
+	
+	/**
+	 * Performs simple animation on view touch event.
+	 * @param v
+	 */
+	public static void makeViewClickable(View v) {
+		v.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				PaddingCache paddingCache = sPaddingMap.get(v.getId());
+				if (paddingCache == null) {
+					paddingCache = new PaddingCache(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), v.getPaddingBottom());
+					sPaddingMap.put(v.getId(), paddingCache);
+				}
+
+				int paddingLeft = paddingCache.paddingLeft;
+				int paddingRight = paddingCache.paddingRight;
+				int paddingTop = paddingCache.paddingTop;
+				int paddingBottom = paddingCache.paddingBottom;
+
+				if (event.getAction() == MotionEvent.ACTION_DOWN) {
+					int padding = (int) ((Math.min(v.getWidth(), v.getHeight())) * 0.1);
+
+					v.setPadding(padding + paddingLeft, padding + paddingTop, padding + paddingRight, padding + paddingBottom);
+					v.invalidate();
+				} else if (event.getAction() == MotionEvent.ACTION_UP) {
+					v.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+					v.invalidate();
+				}
+				return false; // false so the touch event is sent to onClickListener
+			}
+		});
+	}
+	
+	@SuppressLint("UseSparseArrays")
+	private static Map<Integer, PaddingCache> sPaddingMap = new HashMap<Integer, PaddingCache>();
+
+	private static class PaddingCache {
+		final int paddingLeft;
+		final int paddingRight;
+		final int paddingTop;
+		final int paddingBottom;
+
+		public PaddingCache(int left, int top, int right, int bottom) {
+			paddingLeft = left;
+			paddingRight = right;
+			paddingTop = top;
+			paddingBottom = bottom;
 		}
 	}
 }
