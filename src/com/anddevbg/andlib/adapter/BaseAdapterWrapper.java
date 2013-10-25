@@ -103,7 +103,7 @@ public abstract class BaseAdapterWrapper<T> extends BaseAdapter implements OnScr
 	}
 
 	/**
-	 * Convenient method to add list without notifying for each element.
+	 * Convenience method to add list without notifying for each element.
 	 * 
 	 * @param items
 	 */
@@ -118,7 +118,7 @@ public abstract class BaseAdapterWrapper<T> extends BaseAdapter implements OnScr
 	}
 
 	/**
-	 * Convenient method to remove list without notifying for each element.
+	 * Convenience method to remove list without notifying for each element.
 	 * 
 	 * @param items
 	 */

@@ -12,7 +12,7 @@ import com.anddevbg.andlib.task.runner.SyncTaskRunnerWorker;
 
 /**
  * 
- * Convenient class to execute sequence of tasks for a result.
+ * Convenience class to execute sequence of tasks for a result.
  * 
  * @author anddevbg@gmail.com
  *
