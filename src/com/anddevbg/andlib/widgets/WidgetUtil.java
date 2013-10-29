@@ -28,17 +28,18 @@ import com.anddevbg.andlib.log.LogWrapper;
 /**
  * 
  * @author anddevbg@gmail.com
- *
+ * 
  */
 public class WidgetUtil {
 
 	private WidgetUtil() {
 	}
-	
+
 	/**
 	 * 
 	 * @param view
-	 * @param fontPath e.g. "fonts/niceFont.ttf"
+	 * @param fontPath
+	 *            e.g. "fonts/niceFont.ttf"
 	 */
 	public static void setFontOfTextViewFromAssets(TextView view, String fontPath) {
 		try {
@@ -117,9 +118,9 @@ public class WidgetUtil {
 					if (squareSide == 0) {
 						return;
 					}
-					
+
 					WidgetUtil.removeOnGlobalLayoutListener(view, this);
-					
+
 					LayoutParams layoutParams = view.getLayoutParams();
 					layoutParams.width = squareSide;
 					layoutParams.height = squareSide;
@@ -127,20 +128,20 @@ public class WidgetUtil {
 				}
 			};
 			view.getViewTreeObserver().addOnGlobalLayoutListener(listener);
-			
+
 			return listener;
 		}
-		
+
 		return null;
 	}
-	
+
 	public static Rect getRectOfView(View v) {
 		int[] position = new int[2];
 		v.getLocationOnScreen(position);
 
 		return new Rect(position[0], position[1], position[0] + v.getWidth(), position[1] + v.getHeight());
 	}
-	
+
 	/**
 	 * Convenience method to remove onGlobalLayoutListener.
 	 */
@@ -148,14 +149,14 @@ public class WidgetUtil {
 	@SuppressLint("NewApi")
 	public static void removeOnGlobalLayoutListener(View view, OnGlobalLayoutListener listener) {
 		LogWrapper.d(WidgetUtil.class, "removeOnGlobalLayoutListener()");
-		
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
 			view.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
 		} else {
 			view.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
 		}
 	}
-	
+
 	/**
 	 * 
 	 * Convenience method to enable/disable view group.
@@ -174,9 +175,11 @@ public class WidgetUtil {
 			}
 		}
 	}
-	
+
+	// TODO add text view text size animation.
 	/**
 	 * Performs simple animation on view touch event.
+	 * 
 	 * @param v
 	 */
 	public static void makeViewClickable(View v) {
@@ -184,6 +187,27 @@ public class WidgetUtil {
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
+				if (v instanceof TextView) {
+					processTextViewTouch((TextView) v, event);
+				} else {
+					processViewOnTouch(v, event);
+				}
+
+				return false; // false so the touch event is sent to onClickListener
+			}
+
+			private void processTextViewTouch(TextView tv, MotionEvent event) {
+				if (event.getAction() == MotionEvent.ACTION_DOWN) {
+					float textSize = tv.getTextSize();
+					sTextSizeMap.put(tv.getId(), textSize);
+
+					tv.setTextSize(textSize * 0.9f);
+				} else if (event.getAction() == MotionEvent.ACTION_UP) {
+					tv.setTextSize(sTextSizeMap.get(tv.getId()));
+				}
+			}
+
+			private void processViewOnTouch(View v, MotionEvent event) {
 				PaddingCache paddingCache = sPaddingMap.get(v.getId());
 				if (paddingCache == null) {
 					paddingCache = new PaddingCache(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), v.getPaddingBottom());
@@ -204,11 +228,13 @@ public class WidgetUtil {
 					v.setPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
 					v.invalidate();
 				}
-				return false; // false so the touch event is sent to onClickListener
 			}
 		});
 	}
-	
+
+	@SuppressLint("UseSparseArrays")
+	private static Map<Integer, Float> sTextSizeMap = new HashMap<Integer, Float>();
+
 	@SuppressLint("UseSparseArrays")
 	private static Map<Integer, PaddingCache> sPaddingMap = new HashMap<Integer, PaddingCache>();
 
