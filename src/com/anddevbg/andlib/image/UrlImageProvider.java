@@ -43,11 +43,13 @@ public class UrlImageProvider extends BaseImageProvider<UrlImageParams> {
 
 	@Override
 	protected List<Task<Params>> getTasks() {
+		Params params = new Params();
+		
 		List<Task<Params>> tasks = new ArrayList<Task<Params>>();
-		tasks.add(new Task<Params>(0) {
+		tasks.add(new Task<Params>(0, params) {
 
 			@Override
-			public void execute(Params updatableObject) {
+			public void execute() {
 				final String id = mParams.getId();
 
 				final int width = mParams.getWidthHeight().width;
@@ -63,7 +65,7 @@ public class UrlImageProvider extends BaseImageProvider<UrlImageParams> {
 					imageHolder.image = BitmapUtil.loadBitmapFromURL(url, cachePath, width, height);
 				}
 				
-				updatableObject.imageHolderMap.put(getId(), imageHolder);
+				getUpdatableObject().imageHolderMap.put(getId(), imageHolder);
 			}
 
 		});

@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
-import com.anddevbg.andlib.task.runner.SyncTaskRunnerWorker;
+import com.anddevbg.andlib.task.worker.SyncTaskRunnerWorker;
 
 import android.os.Handler;
 import android.os.Looper;
 
 // TODO this class is not tested.
-public abstract class InfiniteTaskRunner<T> extends TaskRunner<T> {
+public abstract class InfiniteTaskRunner<T> extends AbsTaskRunner<T> {
 
 	public static final int INFINITE_TASK_ID = 666;
 
@@ -19,16 +19,16 @@ public abstract class InfiniteTaskRunner<T> extends TaskRunner<T> {
 
 	private Handler mHandler;
 
-	public InfiniteTaskRunner() {
-		this(null);
+	public InfiniteTaskRunner(T updatableObject) {
+		this(updatableObject, null);
 	}
 
-	public InfiniteTaskRunner(ITaskRunnerCallback<T> callback) {
+	public InfiniteTaskRunner(T updatableObject, ITaskRunnerCallback<T> callback) {
 		super(new SyncTaskRunnerWorker<T>(), callback);
 
 		mHandler = new Handler(Looper.getMainLooper());
 
-		mInfiniteTask = new InfiniteTask();
+		mInfiniteTask = new InfiniteTask(updatableObject);
 		List<Task<T>> tasks = new ArrayList<Task<T>>();
 		tasks.add(mInfiniteTask);
 		super.setTasks(tasks);
@@ -50,20 +50,20 @@ public abstract class InfiniteTaskRunner<T> extends TaskRunner<T> {
 
 		private BlockingQueue<Task<T>> mTasks;
 
-		public InfiniteTask() {
-			super(INFINITE_TASK_ID);
+		public InfiniteTask(T updatableObject) {
+			super(INFINITE_TASK_ID, updatableObject);
 
 			mTasks = new ArrayBlockingQueue<Task<T>>(16);
 		}
 
 		@Override
-		public void execute(T updatableObject) {
+		public void execute() {
 			Task<T> task;
 
 			while (true) {
 				try {
 					task = mTasks.take();
-					task.execute(updatableObject);
+					task.execute();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 
@@ -73,8 +73,6 @@ public abstract class InfiniteTaskRunner<T> extends TaskRunner<T> {
 
 					continue;
 				}
-
-				task.execute(updatableObject);
 
 				final TaskProgress<T> fetchProgress = new TaskProgress<T>();
 				fetchProgress.completedTask = task;

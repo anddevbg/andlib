@@ -1,4 +1,4 @@
-package com.anddevbg.andlib.task.runner;
+package com.anddevbg.andlib.task.worker;
 
 import java.util.List;
 
@@ -7,6 +7,7 @@ import android.os.Build;
 
 import com.anddevbg.andlib.task.ITaskRunnerWorker;
 import com.anddevbg.andlib.task.ITaskRunnerWorkerCallback;
+import com.anddevbg.andlib.task.State;
 import com.anddevbg.andlib.task.Task;
 import com.anddevbg.andlib.task.TaskProgress;
 
@@ -15,23 +16,35 @@ public class SyncTaskRunnerWorker<T> extends AsyncTask<Void, TaskProgress<T>, Vo
 	private Task<T> mCurrentTask;
 	private ITaskRunnerWorkerCallback<T> mCallback;
 	private List<Task<T>> mTasks;
-	private T mResultObject;
+
+	private State mState;
+
+	public SyncTaskRunnerWorker() {
+		mState = State.PENDING;
+	}
 
 	@Override
-	public void start(T resultObject, List<Task<T>> tasks) {
-		if (getStatus() == Status.PENDING) {
-			mResultObject = resultObject;
-			mTasks = tasks;
+	public void start(List<Task<T>> tasks) {
+		synchronized (this) {
+			if (mState == State.PENDING) {
+				mState = State.RUNNING;
 
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-				executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-			} else {
-				execute();
+				mTasks = tasks;
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+					executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+				} else {
+					execute();
+				}
 			}
 		}
 	}
 
 	public void stop() {
+		synchronized (this) {
+			mState = State.CANCELLED;
+		}
+
 		if (mCurrentTask != null) {
 			mCurrentTask.stop();
 		}
@@ -64,7 +77,7 @@ public class SyncTaskRunnerWorker<T> extends AsyncTask<Void, TaskProgress<T>, Vo
 			}
 
 			mCurrentTask = mTasks.get(i);
-			mCurrentTask.execute(mResultObject);
+			mCurrentTask.execute();
 
 			if (isCancelled()) {
 				break;
@@ -94,8 +107,17 @@ public class SyncTaskRunnerWorker<T> extends AsyncTask<Void, TaskProgress<T>, Vo
 	protected void onPostExecute(Void result) {
 		super.onPostExecute(result);
 
+		synchronized (this) {
+			mState = State.FINISHED;
+		}
+
 		if (mCallback != null) {
 			mCallback.onWorkerJobComplete(isCancelled());
 		}
+	}
+
+	@Override
+	public synchronized State getState() {
+		return mState;
 	}
 }

@@ -3,37 +3,36 @@ package com.anddevbg.andlib.task;
 public abstract class Task<T> {
 
 	private final int mId;
-	private Object mTag;
+	
+	private final T mUpdatableObject;
+	
 	private boolean mIsStopped;
 
-	public Task(int id) {
+	public Task(int id, T updatableObject) {
 		mId = id;
+		mUpdatableObject = updatableObject;
 		
 		mIsStopped = false;
 	}
 
-	/*
-	 * Called from work thread
+	/**
+	 * Must be called on work thread.
 	 */
-	public abstract void execute(T updatableObject);
+	public abstract void execute();
 	
 	public int getId() {
 		return mId;
 	}
 	
-	public void setTag(Object tag) {
-		mTag = tag;
-	}
-	
-	public Object getTag() {
-		return mTag;
-	}
-	
-	public boolean isStopped() {
+	public synchronized boolean isStopped() {
 		return mIsStopped;
 	}
 	
-	public void stop() {
+	public synchronized void stop() {
 		mIsStopped = true;
+	}
+	
+	public T getUpdatableObject() {
+		return mUpdatableObject;
 	}
 }

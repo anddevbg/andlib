@@ -4,43 +4,38 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.annotation.SuppressLint;
-import android.os.AsyncTask;
-import android.os.AsyncTask.Status;
 
 import com.anddevbg.andlib.log.LogWrapper;
-import com.anddevbg.andlib.task.runner.SyncTaskRunnerWorker;
+import com.anddevbg.andlib.task.worker.SyncTaskRunnerWorker;
 
 /**
  * 
  * Convenience class to execute sequence of tasks for a result.
  * 
  * @author anddevbg@gmail.com
- *
+ * 
  */
-public abstract class TaskRunner<T> implements ITaskRunnerWorkerCallback<T> {
+public abstract class AbsTaskRunner<T> implements ITaskRunnerWorkerCallback<T> {
 
 	private List<Task<T>> mTasks;
 	private ITaskRunnerWorker<T> mWorker;
 	private ITaskRunnerCallback<T> mCallback;
-	
-	private T mResultObject;
 
-	public TaskRunner() {
+	public AbsTaskRunner() {
 		this(new SyncTaskRunnerWorker<T>(), null);
 	}
 
-	public TaskRunner(ITaskRunnerWorker<T> worker, ITaskRunnerCallback<T> callback) {
+	public AbsTaskRunner(ITaskRunnerWorker<T> worker, ITaskRunnerCallback<T> callback) {
 		synchronized (this) {
 			mCallback = callback;
 		}
-		
-		mResultObject = createResultObject();
+
 		mWorker = worker;
 		mWorker.setCallback(this);
 	}
 
 	public void setTasks(List<Task<T>> tasks) {
-		if (mWorker.getStatus() != Status.PENDING) {
+		if (mWorker.getState() != State.PENDING) {
 			throw new RuntimeException("Tasks already has been executed or are in process of executing.");
 		}
 
@@ -48,23 +43,21 @@ public abstract class TaskRunner<T> implements ITaskRunnerWorkerCallback<T> {
 	}
 
 	@SuppressLint("NewApi")
-	public void start() {
+	public synchronized void start() {
 		LogWrapper.d(this, "---- Start ----");
-		
+
 		if (mTasks == null || mTasks.isEmpty()) {
 			throw new RuntimeException("Task list is empty.");
 		}
-		
-		mWorker.start(mResultObject, mTasks);
+
+		mWorker.start(mTasks);
 	}
 
-	public void stop() {
+	public synchronized void stop() {
 		LogWrapper.d(this, "---- Stop ----");
-		
-		if (mWorker.getStatus() == AsyncTask.Status.RUNNING) {
-			synchronized (this) {
-				mCallback = null;
-			}
+
+		if (mWorker.getState() == State.RUNNING) {
+			mCallback = null;
 			mWorker.stop();
 		}
 	}
@@ -73,10 +66,6 @@ public abstract class TaskRunner<T> implements ITaskRunnerWorkerCallback<T> {
 		synchronized (this) {
 			mCallback = callback;
 		}
-	}
-	
-	public Status getStatus() {
-		return mWorker.getStatus();
 	}
 
 	@Override
@@ -92,7 +81,7 @@ public abstract class TaskRunner<T> implements ITaskRunnerWorkerCallback<T> {
 	public void onWorkerTaskComplete(TaskProgress<T> fetchProgress) {
 		synchronized (this) {
 			if (mCallback != null) {
-				mCallback.onProgress(mResultObject, fetchProgress);
+				mCallback.onProgress(fetchProgress);
 			}
 		}
 	}
@@ -101,16 +90,19 @@ public abstract class TaskRunner<T> implements ITaskRunnerWorkerCallback<T> {
 	public void onWorkerJobComplete(boolean isCancelled) {
 		synchronized (this) {
 			if (mCallback != null) {
-				if (mResultObject != null) {
-					mCallback.onJobComplete(mResultObject);
+				T resultObject = createFinalResultObject();
+				if (resultObject != null) {
+					mCallback.onJobComplete(resultObject);
 				} else {
 					mCallback.onJobFailed();
 				}
 			}
 		}
-		
-		mResultObject = null;
 	}
 	
-	protected abstract T createResultObject();
+	protected abstract T createFinalResultObject();
+
+	protected ITaskRunnerWorker<T> getWorker() {
+		return mWorker;
+	}
 }

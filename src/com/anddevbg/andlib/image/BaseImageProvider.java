@@ -11,8 +11,8 @@ import com.anddevbg.andlib.log.LogWrapper;
 import com.anddevbg.andlib.task.ITaskRunnerCallback;
 import com.anddevbg.andlib.task.Task;
 import com.anddevbg.andlib.task.TaskProgress;
-import com.anddevbg.andlib.task.TaskRunner;
-import com.anddevbg.andlib.task.runner.SyncTaskRunnerWorker;
+import com.anddevbg.andlib.task.AbsTaskRunner;
+import com.anddevbg.andlib.task.worker.SyncTaskRunnerWorker;
 
 /**
  * 
@@ -21,7 +21,7 @@ import com.anddevbg.andlib.task.runner.SyncTaskRunnerWorker;
  */
 abstract class BaseImageProvider<T> implements ImageProvider<T>, ITaskRunnerCallback<Params> {
 
-	private TaskRunner<Params> mTaskRunner;
+	private AbsTaskRunner<Params> mTaskRunner;
 	private ImageLoadCallback mCallback;
 	private T mImageProviderParams;
 	
@@ -130,8 +130,8 @@ abstract class BaseImageProvider<T> implements ImageProvider<T>, ITaskRunnerCall
 	}
 
 	@Override
-	public void onProgress(Params resultObject, TaskProgress<Params> progress) {
-		ImageHolder imageHolder = resultObject.imageHolderMap.get(progress.completedTask.getId());
+	public void onProgress(TaskProgress<Params> progress) {
+		ImageHolder imageHolder = progress.completedTask.getUpdatableObject().imageHolderMap.get(progress.completedTask.getId());
 		if (imageHolder != null) {
 			onImageLoaded(imageHolder.id, imageHolder.image);
 		}
@@ -149,12 +149,12 @@ abstract class BaseImageProvider<T> implements ImageProvider<T>, ITaskRunnerCall
 	@Override
 	public void onJobFailed() {
 	}
-
-	private TaskRunner<Params> initTaskRunner() {
-		return new TaskRunner<Params>(new SyncTaskRunnerWorker<Params>(), this) {
-
+	
+	private AbsTaskRunner<Params> initTaskRunner() {
+		return new AbsTaskRunner<Params>(new SyncTaskRunnerWorker<Params>(), this) {
+	
 			@Override
-			protected Params createResultObject() {
+			protected Params createFinalResultObject() {
 				return new Params();
 			}
 		};

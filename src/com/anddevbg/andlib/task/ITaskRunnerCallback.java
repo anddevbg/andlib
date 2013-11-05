@@ -10,10 +10,7 @@ public interface ITaskRunnerCallback<T> {
 
 	public void onJobStart();
 
-	/**
-	 * Note: result object might not been complete.
-	 */
-	public void onProgress(T resultObject, TaskProgress<T> progress);
+	public void onProgress(TaskProgress<T> progress);
 
 	public void onJobComplete(T result);
 
