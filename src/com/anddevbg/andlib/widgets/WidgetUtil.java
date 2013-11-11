@@ -176,7 +176,6 @@ public class WidgetUtil {
 		}
 	}
 
-	// TODO add text view text size animation.
 	/**
 	 * Performs simple animation on view touch event.
 	 * 
