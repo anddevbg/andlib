@@ -17,8 +17,8 @@ import android.graphics.drawable.NinePatchDrawable;
 import android.os.Build;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnTouchListener;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.TextView;
@@ -177,33 +177,23 @@ public class WidgetUtil {
 	}
 
 	/**
-	 * Performs simple animation on view touch event.
+	 * Performs simple animation on view touch event. Ignores view if it's
+	 * instance of TextView.
 	 * 
 	 * @param v
 	 */
 	public static void makeViewClickable(View v) {
+		if (v instanceof TextView) {
+			return;
+		}
+
 		v.setOnTouchListener(new OnTouchListener() {
 
 			@Override
 			public boolean onTouch(View v, MotionEvent event) {
-				if (v instanceof TextView) {
-					processTextViewTouch((TextView) v, event);
-				} else {
-					processViewOnTouch(v, event);
-				}
+				processViewOnTouch(v, event);
 
 				return false; // false so the touch event is sent to onClickListener
-			}
-
-			private void processTextViewTouch(TextView tv, MotionEvent event) {
-				if (event.getAction() == MotionEvent.ACTION_DOWN) {
-					float textSize = tv.getTextSize();
-					sTextSizeMap.put(tv.getId(), textSize);
-
-					tv.setTextSize(textSize * 0.9f);
-				} else if (event.getAction() == MotionEvent.ACTION_UP) {
-					tv.setTextSize(sTextSizeMap.get(tv.getId()));
-				}
 			}
 
 			private void processViewOnTouch(View v, MotionEvent event) {
@@ -230,9 +220,6 @@ public class WidgetUtil {
 			}
 		});
 	}
-
-	@SuppressLint("UseSparseArrays")
-	private static Map<Integer, Float> sTextSizeMap = new HashMap<Integer, Float>();
 
 	@SuppressLint("UseSparseArrays")
 	private static Map<Integer, PaddingCache> sPaddingMap = new HashMap<Integer, PaddingCache>();
