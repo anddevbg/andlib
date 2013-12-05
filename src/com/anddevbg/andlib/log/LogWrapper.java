@@ -12,11 +12,12 @@ import android.util.Log;
  */
 public class LogWrapper {
 
-	private static boolean SHOW_LOGS = false;
+	public static boolean SHOW_LOGS = false;
 
 	private LogWrapper() {
 
 	}
+
 	public static void initLogs(Context context) {
 		SHOW_LOGS = (0 != (context.getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE));
 	}
