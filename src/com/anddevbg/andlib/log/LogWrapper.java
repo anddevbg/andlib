@@ -1,5 +1,7 @@
 package com.anddevbg.andlib.log;
 
+import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -10,18 +12,13 @@ import android.util.Log;
  */
 public class LogWrapper {
 
-	public static boolean SHOW_LOGS = false;
+	private static boolean SHOW_LOGS = false;
 	
 	private LogWrapper() {
-
 	}
 	
-	public static void disableLogs() {
-		SHOW_LOGS = false;
-	}
-	
-	public static void enableLogs() {
-		SHOW_LOGS = true;
+	public static void initLogs(Context context) {
+		SHOW_LOGS =  ( 0 != (context.getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE ) );
 	}
 	
 	public static void d(Object tag, String message) {
