@@ -9,8 +9,6 @@ import android.content.Context;
  */
 public interface ImageProvider<T> {
 
-	public String getCacheFolder();
-	
 	public void loadImages(Context ctxt, ImageLoadCallback cb, T params);
 
 	public void cancel();

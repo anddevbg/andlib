@@ -23,11 +23,6 @@ public class UrlImageProvider extends BaseImageProvider<UrlImageParams> {
 	private UrlImageParams mParams;
 
 	@Override
-	public String getCacheFolder() {
-		return null;
-	}
-
-	@Override
 	protected void prepare() {
 		if (!DataTrafficUtil.hasInternetConnection(getContext())) {
 			LogWrapper.d(this, "Internet connection is off.Cancelling download.");

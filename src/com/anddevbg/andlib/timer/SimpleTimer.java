@@ -18,10 +18,6 @@ public class SimpleTimer {
 		mStartTime = System.currentTimeMillis();
 	}
 
-	/**
-	 * 
-	 * @return passed time
-	 */
 	public void stopTimer() {
 		if (mIsCounting) {
 			mPassedTime = System.currentTimeMillis() - mStartTime;
@@ -38,5 +34,9 @@ public class SimpleTimer {
 	 */
 	public long getPassedTime() {
 		return mPassedTime;
+	}
+	
+	public boolean isCounting() {
+		return mIsCounting;
 	}
 }

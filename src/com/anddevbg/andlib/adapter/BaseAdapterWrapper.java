@@ -133,6 +133,19 @@ public abstract class BaseAdapterWrapper<T> extends BaseAdapter implements OnScr
 	}
 
 	/**
+	 * Removes all elements from this Adapter, leaving it empty.
+	 */
+	public void clear() {
+		synchronized (mLock) {
+			mItems.clear();
+		}
+
+		if (mNotifyOnSetChanged) {
+			notifyDataSetChanged();
+		}
+	}
+
+	/**
 	 * Returns count of elements inside adapter.
 	 */
 	@Override

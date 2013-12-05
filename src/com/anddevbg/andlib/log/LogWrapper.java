@@ -10,7 +10,7 @@ import android.util.Log;
  */
 public class LogWrapper {
 
-	public static boolean SHOW_LOGS = true;
+	public static boolean SHOW_LOGS = false;
 	
 	private LogWrapper() {
 
