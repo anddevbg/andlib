@@ -19,8 +19,6 @@ public abstract class DialogTask<T> extends AsyncTask<Void, Void, T> implements 
 	public DialogTask(Activity activity, IProgressDialog dialog) {
 		mActivity = activity;
 		mDialog = dialog;
-		
-		mDialog.setOnCancelListener(this);
 	}
 	
 	protected Activity getActivity() {
@@ -36,6 +34,7 @@ public abstract class DialogTask<T> extends AsyncTask<Void, Void, T> implements 
 		super.onPreExecute();
 
 		mDialog.show(mActivity);
+		mDialog.setOnCancelListener(this);
 	}
 
 	@Override
